@@ -1,0 +1,47 @@
+{
+  "name": "@seneca/hapi",
+  "version": "0.1.2",
+  "description": "Seneca plugin for hapiging Seneca-based systems.",
+  "main": "hapi.js",
+  "scripts": {
+    "watch": "webpack --watch",
+    "test": "lab -P test -t 80 -I URL,URLSearchParams",
+    "prettier": "prettier --write --no-semi --single-quote *.js lib/*.js test/*.js",
+    "coveralls": "lab -s -P test -r lcov | coveralls",
+    "clean": "rm -rf node_modules yarn.lock package-lock.json",
+    "repo-tag": "REPO_VERSION=`node -e \"console.log(require('./package').version)\"`; echo TAG: v$REPO_VERSION; git commit -a -m v$REPO_VERSION; git push; git tag v$REPO_VERSION; git push --tags;",
+    "repo-publish": "npm run repo-tag; npm publish --access public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voxgig/seneca-hapi.git"
+  },
+  "author": "Richard Rodger (richardrodger.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/voxgig/seneca-hapi/issues"
+  },
+  "homepage": "https://github.com/voxgig/seneca-hapi#readme",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "hapi.js"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "code": "5",
+    "coveralls": "3",
+    "hapi": "17.7",
+    "inert": "5.1",
+    "lab": "17",
+    "prettier": "1",
+    "repo-validator": "github:metsitaba/repo-validator#v0.0.4",
+    "seneca": "github:senecajs/seneca#3.8.0-rc2",
+    "seneca-browser": "0.1.0",
+    "seneca-plugin-validator": "0",
+    "seneca-promisify": "0"
+  }
+}
