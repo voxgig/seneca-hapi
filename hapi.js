@@ -9,10 +9,7 @@ module.exports = hapi
 
 hapi.defaults = {
   test: false,
-  debug: false,
-  make_custom: function(req) {
-    return {}
-  }
+  debug: false
 }
 
 hapi.errors = {}
@@ -20,11 +17,25 @@ hapi.errors = {}
 function hapi(options) {
   const root = this.root
   const tu = this.export('transport/utils')
+
+  const modify_custom = []
+  
+  this.message('role:web-handler,hook:custom', async function(msg) {
+    if('function' === typeof msg.custom) {
+      modify_custom.push(msg.custom)
+    }
+  })
+  
   
   async function handler(req, h) {
     const data = req.payload
     const json = 'string' === typeof data ? tu.parseJSON(data) : data
-    const custom = options.make_custom(req)
+
+    const custom = {}
+    for(var i = 0; i < modify_custom.length; i++) {
+      modify_custom[i](custom,json,'hapi',req)
+    }
+
     const seneca = root.delegate(null, { custom: custom })
     const msg = tu.internalize_msg(seneca, json)
 

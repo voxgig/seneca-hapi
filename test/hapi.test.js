@@ -31,8 +31,18 @@ lab.test('handler', async () => {
   
   const handler = si.export('hapi/handler')
   
-  const out = await handler({payload:{a:1,x:2}})
+  var out = await handler({payload:{a:1,x:2}})
   expect(out).includes({x:2})
+
+  await si.post('role:web-handler,hook:custom', {
+    custom: function(custom) {
+      custom.foo = 1
+    }
+  })
+
+  var out = await handler({payload:{a:1,x:2}})
+  expect(out.meta$.custom.foo).equals(1)
+
 })
 
 
