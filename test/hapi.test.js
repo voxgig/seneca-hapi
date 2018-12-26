@@ -25,11 +25,13 @@ lab.test(
 lab.test('make_handler', async () => {
   const si = seneca_instance()
 
-  si.message('a:1', async function(msg) {
-    return { x: msg.x, q: msg.q }
-  }).message('b:1', async function(msg, meta) {
-    return { y: msg.y, z: meta.custom.z }
-  })
+  si
+    .message('a:1', async function(msg) {
+      return { x: msg.x, q: msg.q }
+    })
+    .message('b:1', async function(msg, meta) {
+      return { y: msg.y, z: meta.custom.z }
+    })
 
   await si.ready()
 
@@ -69,7 +71,7 @@ lab.test('action_handler', async () => {
   const si = seneca_instance()
 
   si.message('a:1', async function(msg) {
-    return { x: msg.x }
+    return { x: msg.x, w: msg.w }
   }).message('e:1', async function(msg) {
     throw new Error('eek')
   })
@@ -87,7 +89,18 @@ lab.test('action_handler', async () => {
     }
   })
 
+  await si.post('role:web-handler,hook:action', {
+    action: 'ignored'
+  })
+
+  await si.post('role:web-handler,hook:action', {
+    action: function(msg) {
+      msg.w = 5
+    }
+  })
+
   var out = await handler({ payload: { a: 1, x: 2 } })
+  expect(out).includes({ x: 2, w: 5 })
   expect(out.meta$.custom.foo).equals(1)
 
   si.quiet()
