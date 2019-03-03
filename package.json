@@ -1,15 +1,15 @@
 {
   "name": "@seneca/hapi",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Seneca plugin for hapi-based systems.",
   "main": "hapi.js",
   "scripts": {
-    "test": "lab -P test -t 80 -I URL,URLSearchParams",
+    "test": "lab -P test -t 90",
     "prettier": "prettier --write --no-semi --single-quote *.js lib/*.js test/*.js",
     "coveralls": "lab -s -P test -r lcov | coveralls",
-    "clean-yarn": "rm -rf node_modules yarn.lock",
-    "repo-tag": "REPO_VERSION=`node -e \"console.log(require('./package').version)\"`; echo TAG: v$REPO_VERSION; git commit -a -m v$REPO_VERSION; git push; git tag v$REPO_VERSION; git push --tags;",
-    "repo-publish": "npm run repo-tag; npm publish --access public"
+    "clean-npm": "rm -rf node_modules package-lock.lock",
+    "repo-tag": "REPO_VERSION=`node -e \"console.log(require('./package').version)\"` && echo TAG: v$REPO_VERSION && git commit -a -m v$REPO_VERSION && git push && git tag v$REPO_VERSION && git push --tags;",
+    "repo-publish": "npm run prettier && npm run test && npm run repo-tag && npm publish --access public"
   },
   "repository": {
     "type": "git",
@@ -31,15 +31,15 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "code": "5",
-    "coveralls": "3",
-    "hapi": "17.7",
-    "inert": "5.1",
-    "lab": "17",
-    "prettier": "1",
-    "seneca": "3.8.0-rc3",
-    "seneca-browser": "0.1.0",
-    "seneca-plugin-validator": "0",
-    "seneca-promisify": "0"
+    "code": "^5.2.4",
+    "coveralls": "^3.0.3",
+    "hapi": "^18.1.0",
+    "inert": "^5.1.2",
+    "lab": "^18.0.2",
+    "prettier": "^1.16.4",
+    "seneca": "plugin",
+    "seneca-browser": "~0.2.0",
+    "seneca-plugin-validator": "0.0.1",
+    "seneca-promisify": "^0.7.1"
   }
 }

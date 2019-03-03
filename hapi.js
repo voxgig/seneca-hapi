@@ -25,7 +25,9 @@ function hapi(options) {
   // Functions to modify the action or message
   const modify_action = []
 
-  
+  // Functions to modify the seneca request delegate
+  const modify_delegate = []
+
   this.message('role:web-handler,hook:custom', async function(msg) {
     if ('function' === typeof msg.custom) {
       modify_custom.push(msg.custom)
@@ -44,7 +46,12 @@ function hapi(options) {
     }
   })
 
-  
+  this.message('role:web-handler,hook:delegate', async function(msg) {
+    if ('function' === typeof msg.delegate) {
+      modify_delegate.push(msg.delegate)
+    }
+  })
+
   // Creates per-request seneca instance
   function make_handler(handler) {
     return async function handler_instance(req, h) {
@@ -57,7 +64,7 @@ function hapi(options) {
   async function action_handler(req, h) {
     const data = req.payload
     const json = 'string' === typeof data ? tu.parseJSON(data) : data
-    if(json instanceof Error) {
+    if (json instanceof Error) {
       throw json
     }
 
@@ -66,13 +73,13 @@ function hapi(options) {
 
     return await new Promise(resolve => {
       var out = null
-      for(var i = 0; i < modify_action.length; i++) {
-        out = modify_action[i].call(seneca,msg,req)
-        if(out) {
+      for (var i = 0; i < modify_action.length; i++) {
+        out = modify_action[i].call(seneca, msg, req)
+        if (out) {
           return resolve(out)
         }
       }
-      
+
       seneca.act(msg, function(err, out, meta) {
         if (err && !options.debug) {
           err.stack = null
@@ -94,8 +101,13 @@ function hapi(options) {
       modify_fixed[i](fixed, req, json)
     }
 
-    const seneca = root.delegate(fixed, { custom: custom })
-    return seneca
+    const delegate = root.delegate(fixed, { custom: custom })
+
+    for (var i = 0; i < modify_delegate.length; i++) {
+      modify_delegate[i](delegate, req, json)
+    }
+
+    return delegate
   }
 
   return {

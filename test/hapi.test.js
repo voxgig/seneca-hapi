@@ -25,13 +25,11 @@ lab.test(
 lab.test('make_handler', async () => {
   const si = seneca_instance()
 
-  si
-    .message('a:1', async function(msg) {
-      return { x: msg.x, q: msg.q }
-    })
-    .message('b:1', async function(msg, meta) {
-      return { y: msg.y, z: meta.custom.z }
-    })
+  si.message('a:1', async function(msg) {
+    return { x: msg.x, q: msg.q }
+  }).message('b:1', async function(msg, meta) {
+    return { y: msg.y, z: meta.custom.z }
+  })
 
   await si.ready()
 
@@ -40,7 +38,7 @@ lab.test('make_handler', async () => {
   const handler = make_handler(async function(seneca, req, h) {
     var xq = await seneca.post('a:1', { x: req.payload.x })
     var yz = await seneca.post('b:1', { y: req.payload.y })
-    return { x: xq.x, y: yz.y, z: yz.z, q: xq.q }
+    return { x: xq.x, y: yz.y, z: yz.z, q: xq.q, did: seneca.did }
   })
 
   await si.post('role:web-handler,hook:custom', {
@@ -63,8 +61,15 @@ lab.test('make_handler', async () => {
     }
   })
 
+  await si.post('role:web-handler,hook:delegate', {
+    delegate: function(seneca, req) {
+      seneca.did += '~' + req.payload.x
+    }
+  })
+
   var out = await handler({ payload: { x: 1, y: 2 } })
   expect(out).includes({ x: 1, y: 2, z: 3, q: 4 })
+  expect(out.did).endsWith('~1')
 })
 
 lab.test('action_handler', async () => {
