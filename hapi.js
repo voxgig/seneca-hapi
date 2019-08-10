@@ -1,7 +1,5 @@
-/* Copyright (c) 2018 voxgig and other contributors, MIT License */
+/* Copyright (c) 2018-2019 voxgig and other contributors, MIT License */
 'use strict'
-
-const Util = require('util')
 
 module.exports = hapi
 
@@ -85,6 +83,8 @@ function hapi(options) {
           err.stack = null
         }
 
+        // modify_result
+        
         resolve(tu.externalize_reply(this, err, out, meta))
       })
     })
@@ -92,18 +92,21 @@ function hapi(options) {
 
   function prepare_seneca(req, json) {
     const custom = {}
-    for (var i = 0; i < modify_custom.length; i++) {
+    var i
+
+    for (i = 0; i < modify_custom.length; i++) {
       modify_custom[i](custom, req, json)
     }
 
     const fixed = {}
-    for (var i = 0; i < modify_fixed.length; i++) {
+    
+    for (i = 0; i < modify_fixed.length; i++) {
       modify_fixed[i](fixed, req, json)
     }
 
     const delegate = root.delegate(fixed, { custom: custom })
 
-    for (var i = 0; i < modify_delegate.length; i++) {
+    for (i = 0; i < modify_delegate.length; i++) {
       modify_delegate[i](delegate, req, json)
     }
 
@@ -118,4 +121,4 @@ function hapi(options) {
   }
 }
 
-const intern = (hapi.intern = {})
+// const intern = (hapi.intern = {})

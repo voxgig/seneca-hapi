@@ -1,26 +1,19 @@
-/* Copyright (c) 2018 voxgig and other contributors, MIT License */
+/* Copyright (c) 2018-2019 voxgig and other contributors, MIT License */
 'use strict'
 
-const Util = require('util')
+// const Util = require('util')
 
-const Lab = require('lab')
-const Code = require('code')
+const Lab = require('@hapi/lab')
+const Code = require('@hapi/code')
 const lab = (exports.lab = Lab.script())
 const expect = Code.expect
 
 const PluginValidator = require('seneca-plugin-validator')
 const Seneca = require('seneca')
-const Optioner = require('optioner')
-const Joi = Optioner.Joi
 
 const Plugin = require('..')
 
-lab.test(
-  'validate',
-  Util.promisify(function(x, fin) {
-    PluginValidator(Plugin, module)(fin)
-  })
-)
+lab.test('validate', PluginValidator(Plugin, module))
 
 lab.test('make_handler', async () => {
   const si = seneca_instance()
@@ -104,7 +97,7 @@ lab.test('action_handler', async () => {
     }
   })
 
-  var out = await handler({ payload: { a: 1, x: 2 } })
+  out = await handler({ payload: { a: 1, x: 2 } })
   expect(out).includes({ x: 2, w: 5 })
   expect(out.meta$.custom.foo).equals(1)
 

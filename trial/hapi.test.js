@@ -1,7 +1,7 @@
 
 const Seneca = require('seneca')
-const Hapi = require('hapi')
-const Inert = require('inert')
+const Hapi = require('@hapi/hapi')
+const Inert = require('@hapi/inert')
 
 setup()
 
