@@ -14,7 +14,7 @@ function hapi(options) {
   const seneca = this
   const root = seneca.root
   const tu = seneca.export('transport/utils')
-  
+
   const modifier_names = [
     // Functions to modify the custom object in Seneca message meta$ descriptions
     // params: (custom, json, req, h)
@@ -37,12 +37,12 @@ function hapi(options) {
     'result'
   ]
 
-  modifier_names.forEach((name) => {
+  modifier_names.forEach(name => {
     intern.modifiers[name] = []
     var hook_action = intern.make_modifier_hook(name)
-    seneca.message({role:'web-handler', hook:name}, hook_action)
+    seneca.message({ role: 'web-handler', hook: name }, hook_action)
   })
-  
+
   // Creates per-request seneca instance
   function make_handler(handler) {
     return async function handler_instance(req, h) {
@@ -51,7 +51,6 @@ function hapi(options) {
     }
   }
 
-  
   // Convenience handler to call a seneca action directly from inbound POST JSON.
   async function action_handler(req, h) {
     const data = req.payload
@@ -80,7 +79,7 @@ function hapi(options) {
         for (var i = 0; i < intern.modifiers.result.length; i++) {
           intern.modifiers.result[i].call(seneca, msg, err, out, req, h)
         }
-        
+
         resolve(tu.externalize_reply(this, err, out, meta))
       })
     })
@@ -95,7 +94,7 @@ function hapi(options) {
     }
 
     const fixed = {}
-    
+
     for (i = 0; i < intern.modifiers.fixed.length; i++) {
       intern.modifiers.fixed[i](fixed, json, req, h)
     }

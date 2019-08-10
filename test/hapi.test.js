@@ -99,13 +99,12 @@ lab.test('action_handler', async () => {
 
   await si.post('role:web-handler,hook:result', {
     result: function(msg, err, out) {
-      if(!err) {
+      if (!err) {
         out.v = 6
       }
     }
   })
 
-  
   out = await handler({ payload: { a: 1, x: 2 } })
   expect(out).includes({ x: 2, w: 5, v: 6 })
   expect(out.meta$.custom.foo).equals(1)
