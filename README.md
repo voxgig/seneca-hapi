@@ -1,5 +1,5 @@
-# seneca-debug
-[Seneca](senecajs.org) plugin for debugging Seneca-based systems.
+# seneca-hapi
+[Seneca](senecajs.org) plugin for hapiging Seneca-based systems.
 
 [![Npm][BadgeNpm]][Npm]
 [![Travis][BadgeTravis]][Travis]
@@ -7,23 +7,10 @@
 
 
 
-## Quick Example
 
-```
-```
-
-
-## Inbound Messages
-
-
-
-## Implementations
-
-
-
-[BadgeCoveralls]: https://coveralls.io/repos/voxgig/seneca-debug/badge.svg?branch=master&service=github
-[BadgeNpm]: https://badge.fury.io/js/seneca-debug.svg
-[BadgeTravis]: https://travis-ci.org/voxgig/seneca-debug.svg?branch=master
-[Coveralls]: https://coveralls.io/github/voxgig/seneca-debug?branch=master
-[Npm]: https://www.npmjs.com/package/seneca-debug
-[Travis]: https://travis-ci.org/voxgig/seneca-debug?branch=master
+[BadgeCoveralls]: https://coveralls.io/repos/voxgig/seneca-hapi/badge.svg?branch=master&service=github
+[BadgeNpm]: https://badge.fury.io/js/seneca-hapi.svg
+[BadgeTravis]: https://travis-ci.org/voxgig/seneca-hapi.svg?branch=master
+[Coveralls]: https://coveralls.io/github/voxgig/seneca-hapi?branch=master
+[Npm]: https://www.npmjs.com/package/seneca-hapi
+[Travis]: https://travis-ci.org/voxgig/seneca-hapi?branch=master
