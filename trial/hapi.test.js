@@ -2,6 +2,7 @@
 const Seneca = require('seneca')
 const Hapi = require('@hapi/hapi')
 const Inert = require('@hapi/inert')
+const Cookie = require('@hapi/cookie')
 
 setup()
 
@@ -24,12 +25,34 @@ async function setup() {
       throw new Error('C1')
     })
 
+
+  si.act('role:web-handler,hook:result', {
+    result: function(msg, err, out, req, h) {
+      h.state('seneca-hapi-plain', 'BAR:'+Date.now())
+      h.state('seneca-hapi', 'FOO:'+Date.now())
+      if(!err) {
+        out.z = 1
+      }
+    }
+  })
+
+  
   await si.ready()
   
   const hapi = new Hapi.Server({port:8080})
 
   await hapi.register(Inert)
+  await hapi.register(Cookie)
 
+
+  hapi.auth.strategy('session', 'cookie', {
+    cookie: {
+      name: 'seneca-hapi',
+      password: 'foo'.repeat(12)
+    }
+  })
+
+  
   hapi.route({
     method: 'GET',
     path: '/{path*}',
@@ -54,7 +77,7 @@ async function setup() {
     method: 'POST',
     path: '/msg',
     config: {
-      handler: si.export('hapi/handler')
+      handler: si.export('hapi/action_handler')
     }
   })
 

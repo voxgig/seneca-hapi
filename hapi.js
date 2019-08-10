@@ -11,53 +11,47 @@ hapi.defaults = {
 hapi.errors = {}
 
 function hapi(options) {
-  const root = this.root
-  const tu = this.export('transport/utils')
+  const seneca = this
+  const root = seneca.root
+  const tu = seneca.export('transport/utils')
+  
+  const modifier_names = [
+    // Functions to modify the custom object in Seneca message meta$ descriptions
+    // params: (custom, json, req, h)
+    'custom',
 
-  // Functions to modify the custom object in Seneca message meta$ descriptions
-  const modify_custom = []
+    // Functions to modify the fixed arguments to Seneca messages
+    // params: (fixed, json, req, h)
+    'fixed',
 
-  // Functions to modify the fixed arguments to Seneca messages
-  const modify_fixed = []
+    // Functions to modify the seneca request delegate
+    // params: (delegate, json, req, h)
+    'delegate',
 
-  // Functions to modify the action or message
-  const modify_action = []
+    // Functions to modify the action or message
+    // params: (msg, req, h), this === seneca instance
+    'action',
 
-  // Functions to modify the seneca request delegate
-  const modify_delegate = []
+    // Functions to modify the result
+    // params: (msg, err, out, req, h), this === seneca instance
+    'result'
+  ]
 
-  this.message('role:web-handler,hook:custom', async function(msg) {
-    if ('function' === typeof msg.custom) {
-      modify_custom.push(msg.custom)
-    }
+  modifier_names.forEach((name) => {
+    intern.modifiers[name] = []
+    var hook_action = intern.make_modifier_hook(name)
+    seneca.message({role:'web-handler', hook:name}, hook_action)
   })
-
-  this.message('role:web-handler,hook:fixed', async function(msg) {
-    if ('function' === typeof msg.fixed) {
-      modify_fixed.push(msg.fixed)
-    }
-  })
-
-  this.message('role:web-handler,hook:action', async function(msg) {
-    if ('function' === typeof msg.action) {
-      modify_action.push(msg.action)
-    }
-  })
-
-  this.message('role:web-handler,hook:delegate', async function(msg) {
-    if ('function' === typeof msg.delegate) {
-      modify_delegate.push(msg.delegate)
-    }
-  })
-
+  
   // Creates per-request seneca instance
   function make_handler(handler) {
     return async function handler_instance(req, h) {
-      const seneca = prepare_seneca(req)
+      const seneca = prepare_seneca(null, req, h)
       return await handler(seneca, req, h)
     }
   }
 
+  
   // Convenience handler to call a seneca action directly from inbound POST JSON.
   async function action_handler(req, h) {
     const data = req.payload
@@ -66,13 +60,13 @@ function hapi(options) {
       throw json
     }
 
-    const seneca = prepare_seneca(req, json)
+    const seneca = prepare_seneca(json, req, h)
     const msg = tu.internalize_msg(seneca, json)
 
     return await new Promise(resolve => {
       var out = null
-      for (var i = 0; i < modify_action.length; i++) {
-        out = modify_action[i].call(seneca, msg, req)
+      for (var i = 0; i < intern.modifiers.action.length; i++) {
+        out = intern.modifiers.action[i].call(seneca, msg, req, h)
         if (out) {
           return resolve(out)
         }
@@ -83,31 +77,33 @@ function hapi(options) {
           err.stack = null
         }
 
-        // modify_result
+        for (var i = 0; i < intern.modifiers.result.length; i++) {
+          intern.modifiers.result[i].call(seneca, msg, err, out, req, h)
+        }
         
         resolve(tu.externalize_reply(this, err, out, meta))
       })
     })
   }
 
-  function prepare_seneca(req, json) {
+  function prepare_seneca(json, req, h) {
     const custom = {}
     var i
 
-    for (i = 0; i < modify_custom.length; i++) {
-      modify_custom[i](custom, req, json)
+    for (i = 0; i < intern.modifiers.custom.length; i++) {
+      intern.modifiers.custom[i](custom, json, req, h)
     }
 
     const fixed = {}
     
-    for (i = 0; i < modify_fixed.length; i++) {
-      modify_fixed[i](fixed, req, json)
+    for (i = 0; i < intern.modifiers.fixed.length; i++) {
+      intern.modifiers.fixed[i](fixed, json, req, h)
     }
 
     const delegate = root.delegate(fixed, { custom: custom })
 
-    for (i = 0; i < modify_delegate.length; i++) {
-      modify_delegate[i](delegate, req, json)
+    for (i = 0; i < intern.modifiers.delegate.length; i++) {
+      intern.modifiers.delegate[i](delegate, json, req, h)
     }
 
     return delegate
@@ -121,4 +117,13 @@ function hapi(options) {
   }
 }
 
-// const intern = (hapi.intern = {})
+const intern = (hapi.intern = {
+  modifiers: {},
+  make_modifier_hook: function(name) {
+    return async function(msg) {
+      if ('function' === typeof msg[name]) {
+        intern.modifiers[name].push(msg[name])
+      }
+    }
+  }
+})
